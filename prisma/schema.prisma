@@ -1,0 +1,160 @@
+// 案件レーダーのデータモデル。
+//
+// Python 版では state/seen.json（重複排除）と out/<日付>.json（結果）に
+// 分けて持っていたが、TS 版では両方これに寄せる。
+// 重複排除は @@unique([source, uid]) に任せるので、seen リストを
+// 自前で管理しなくてよくなる。
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Job {
+  id String @id @default(cuid())
+
+  // --- 取得したそのままの事実 ---
+  /// provider の名前。媒体ごとに1つ
+  source         String
+  /// 画面に出す媒体名
+  sourceLabel    String?
+  /// 経路（web / mail / agent）。採点と画面はこれだけを見る。
+  /// 媒体名で分岐しないのは、媒体が増えるたびに採点とUIを直すことになるため
+  sourceChannel  String?
+  uid            String // 媒体内で一意なID
+  url            String
+  title          String
+  postedOn       String? // YYYY-MM-DD。案件票の記載どおり
+  monthlyJpy     Int? // 月額（円）。書かれていなければ null。推定で埋めない
+  hourlyJpy      Int? // 時間単価（円）。月額とは別に持つ（単位の取り違え防止）
+  remote         RemoteKind?
+  minDaysPerWeek Int?
+  /// 作業開始日。案件票に応募期限は書かれていないので、期限の代理指標として使う
+  startOn            String?
+  /// 精算条件が「有」か。稼働が減る月に控除が発生するかの判断に使う
+  hasSettlement      Boolean @default(false)
+  settlementMinHours Int?
+  settlementMaxHours Int?
+  negotiationCount   Int?
+  paymentSiteDays    Int?
+  station            String?
+  requiredSkills String?
+  welcomeSkills  String?
+  roleText       String?
+  body           String? @db.Text
+
+  // --- 判断の結果 ---
+  stage      Stage   @default(FETCHED)
+  dropReason String? // ハードフィルタで落ちた理由。必ず言語化する
+
+  /// 希望適合度・通過可能性・総合（％）。総合 = 希望適合度 × 通過可能性。
+  /// LLM が出した数ではなく lib/scoring.ts が計算した値。確率ではなく並べ替えの指標
+  fitPct   Int?
+  passPct  Int?
+  totalPct Int?
+  /// 計算の内訳（Breakdown[]）。なぜこの数字かを後から説明できるように残す
+  fitBreakdown  Json?
+  passBreakdown Json?
+
+  /// 通過可能性の材料（LLM が数えたもの）
+  requirementsTotal   Int?
+  requirementsMet     Int?
+  requirementsMissing Json?
+  domainExperience    String?
+  /// 案件票がドメイン経験をスキル要件として求めているか。
+  /// 求めていない案件で「未経験の業界」を大きく減点しないための材料
+  domainRequired      Boolean?
+  absoluteBlockers    Json?
+  aiCore              String?
+  pmValue             String?
+
+  /// ハードフィルタに引っかかった点。落とさずに採点した案件だけ入る（担当者提案）。
+  /// dropReason（落とした理由）とは別。落としていないので混ぜない
+  filterNote     String?
+
+  verdict        String?
+  reasons        Json? // string[]
+  concerns       Json? // string[]
+  remoteReading  RemoteKind? // LLM が本文から読んだリモート度
+  monthlyReading Int?
+  stackOverlap   Json? // string[]
+  model          String? // 採点に使ったモデル
+
+  // --- 自分の管理（Slack では持てない部分） ---
+  action Action  @default(UNTOUCHED)
+  note   String?
+  /// 自分で決める「いつまでに返事するか」。案件側の期限ではない
+  dueOn  DateTime?
+  /// 気になる等に動かした時刻。ボードで滞留を見るのに使う
+  movedAt DateTime?
+
+  // --- 応募（担当者提案レーンだけで使う） ---
+  /// 商談希望の短文（200字以内）。calendar の空き枠と要求スキルの○×から組む
+  draftText       String?
+  /// 下書きに書いた日程の行。あとで送信内容と突き合わせる
+  draftDays       Json?
+  /// 画面で「応募する」を押した時刻。押した=送ってよいという合図
+  sendRequestedAt DateTime?
+  /// 実ブラウザで送信フォームを送り終えた時刻
+  sentAt          DateTime?
+  /// 送信に失敗した理由。黙って未送信のままにしない
+  sendError       String?
+  /// 送信直前・直後のスクリーンショットの保存先
+  sendEvidence    String?
+
+  firstSeenAt DateTime  @default(now())
+  scoredAt    DateTime?
+  notifiedAt  DateTime?
+
+  @@unique([source, uid])
+  @@index([stage, totalPct])
+  @@index([action, movedAt])
+  @@index([startOn])
+  @@index([sendRequestedAt])
+}
+
+model FetchLog {
+  id        String      @id @default(cuid())
+  runAt     DateTime    @default(now())
+  provider  String
+  status    FetchStatus
+  checked   Int?
+  newCount  Int?
+  error     String?     @db.Text
+
+  @@index([runAt])
+}
+
+enum RemoteKind {
+  FULL
+  PARTIAL
+  ONSITE
+  UNCLEAR
+}
+
+/// providers/types.ts の FetchStatus と対応させる。
+/// no_data（公開されていない）と failed（壊れた）を必ず分けておく。
+enum FetchStatus {
+  OK
+  NO_DATA
+  FAILED
+  NOT_CONFIGURED
+}
+
+enum Stage {
+  FETCHED // 取得したがまだ判断していない
+  DROPPED // ハードフィルタで落ちた
+  SCORED // LLM で採点した
+  FAILED // 採点しようとして失敗した（黙って捨てない）
+}
+
+enum Action {
+  UNTOUCHED
+  INTERESTED
+  APPLIED
+  PASSED
+}

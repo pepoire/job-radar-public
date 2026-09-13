@@ -1,0 +1,19 @@
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# 認証情報
+.env
+.env*.local
+
+# 自分の条件・経歴・予定。example 版だけを追跡する
+criteria.json
+criteria.md
+career.md
+availability.json
+
+# 取得した案件の実データ、保存状態
+data/
+state/

@@ -1,0 +1,30 @@
+{
+  "_comment": "数字で機械的に判断する条件。ここを変えると採点が変わる。自分の値に書き換えて criteria.json として保存する",
+
+  "_searches": "毎日回す検索条件。provider が解釈する。取得層はこのリポジトリに入っていないので空でよい",
+  "searches": [],
+
+  "_targetMonthlyJpy": "目標単価。希望適合度が満点になるライン",
+  "targetMonthlyJpy": 900000,
+  "_minMonthlyJpy": "この額を下回る案件は採点前に落とす",
+  "minMonthlyJpy": 800000,
+  "_minMonthlyJpyIfShortWeek": "週 shortWeekDays 日以下の案件はこちらの下限を使う（時間単価で見れば高いため）",
+  "minMonthlyJpyIfShortWeek": 700000,
+  "shortWeekDays": 4,
+
+  "_dropIfMonthlyUnknown": "単価の記載が無い案件を落とすか。非公開で高いものが混ざるので既定は false",
+  "dropIfMonthlyUnknown": false,
+  "dropIfOnsite": true,
+  "dropIfPartialRemote": false,
+
+  "_ngTitleKeywords": "職種の語。タイトルと募集職種だけを照合する。スキル欄まで見ると「AWS保守運用経験」で開発案件が落ちる",
+  "ngTitleKeywords": ["PMO", "ヘルプデスク", "運用監視", "テスト実行", "保守運用"],
+  "_ngSkillKeywords": "技術・ドメインの語。必須スキル欄まで照合する。タイトルに出ないまま必須になっている例があるため",
+  "ngSkillKeywords": ["COBOL", "SAP", "ABAP"],
+
+  "maxDaysPerWeek": null,
+  "_notifyTotalMin": "通知に出す総合マッチ度の下限（％）",
+  "notifyTotalMin": 40,
+  "_maxLlmCallsPerRun": "1回の実行で採点する上限件数。超えたら単価の高い順に切って次回に回す",
+  "maxLlmCallsPerRun": 25
+}

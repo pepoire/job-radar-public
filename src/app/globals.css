@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * 配色は参考にしたメディカルダッシュボードからの抽出値。
+ *
+ *   地      #ecfefb  淡いミント（白ではない）
+ *   カード   #ffffff
+ *   パネル   #f6f7fa
+ *   ティール #82c7d5  プライマリ
+ *   コーラル #ec8e88  注意
+ *   アンバー #f0b96a  中間
+ *
+ * 参考画像は意味づけも持っていた（Health=ティール / Neutral=アンバー /
+ * Continue treatment=コーラル）。それをそのまま
+ * 応募すべき=ティール / 検討=アンバー / 警告=コーラル に対応させている。
+ *
+ * ただし参考画像はベタ塗りの上に白文字を置いており、実測すると
+ * 1.3〜2.4:1 しか出ていない（モックなので成立している）。
+ * 塗りの色はそのまま使い、文字だけ各色の -on（4.6:1以上を確認）に差し替えた。
+ */
+:root {
+  color-scheme: light;
+
+  --ground: #ecfefb;
+  --card: #ffffff;
+  --panel: #f6f7fa;
+  --line: #e2ecee;
+
+  --ink: #2c3e47; /* 本文。カード上 11.1:1 */
+  --muted: #5a6f7a; /* 補助。カード上 5.3:1 */
+
+  /* 塗り（参考画像の実測値そのまま） */
+  --teal: #82c7d5;
+  --teal-pale: #c8e5e8;
+  --teal-soft: #e2f3f6;
+  --teal-on: #17525e; /* 塗りの上の文字 4.61:1 */
+  --teal-ink: #22798b; /* 白・地・パネルの上の文字 4.7:1以上 */
+
+  --coral: #ec8e88;
+  --coral-pale: #f8d4d1;
+  --coral-soft: #fdeceb;
+  --coral-on: #77140d;
+  --coral-ink: #da2419;
+
+  --amber: #f0b96a;
+  --amber-pale: #f9e2c0;
+  --amber-soft: #fdf3e4;
+  --amber-on: #6f4406;
+  --amber-ink: #a06209;
+
+  /* 影は黒ではなくティールを薄めたもの。黒だとこの地の上で濁る */
+  --shadow-soft: 0 1px 2px rgba(60, 120, 135, 0.05), 0 8px 20px -10px rgba(60, 120, 135, 0.18);
+  --shadow-lift: 0 2px 4px rgba(60, 120, 135, 0.07), 0 16px 32px -12px rgba(60, 120, 135, 0.24);
+}
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-feature-settings: "palt" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 単価・％・日数は桁を揃える。列として読めないと比較できない */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+.board-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--teal-pale) transparent;
+}
+.board-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+.board-scroll::-webkit-scrollbar-thumb {
+  background: var(--teal-pale);
+  border-radius: 9999px;
+}
+.board-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}

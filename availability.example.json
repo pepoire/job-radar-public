@@ -1,0 +1,13 @@
+{
+  "_comment": "商談を受けられる条件。カレンダーで埋まっている時間はここから自動で除く（calendar/ics.ts）",
+  "weekdays": [1, 2, 3, 4, 5],
+  "fromHour": 10,
+  "toHour": 18,
+  "durationMinutes": 60,
+  "bufferMinutes": 30,
+  "leadDays": 2,
+  "_unavailableDates": "自分で決めている不可日。旅行・休みなど。YYYY-MM-DD",
+  "unavailableDates": [],
+  "_allowWithoutCalendar": "Googleカレンダー未接続でも日程候補を出すか。true にするなら unavailableDates を自分で埋める",
+  "allowWithoutCalendar": false
+}

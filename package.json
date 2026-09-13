@@ -1,0 +1,46 @@
+{
+  "name": "job-radar",
+  "version": "0.1.0",
+  "private": true,
+  "description": "フリーランス案件を毎朝1回集めて、自分の経歴と希望条件で採点する。取得層は含まない",
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "radar": "tsx scripts/radar.ts",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "local:db": "prisma dev -n jobradar -d && prisma db push --skip-generate",
+    "local": "pnpm local:db && pnpm dev",
+    "local:stop": "prisma dev stop jobradar",
+    "draft": "tsx scripts/draft-proposals.ts",
+    "rescore": "tsx scripts/rescore.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.2.1",
+    "@tanstack/react-query": "^5.62.11",
+    "next": "^14.2.23",
+    "node-ical": "^0.27.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^3.24.1",
+    "zod-to-json-schema": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "prisma": "^6.2.1",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  },
+  "packageManager": "pnpm@9.15.9"
+}
